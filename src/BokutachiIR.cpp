@@ -216,7 +216,7 @@ static SendScoreStatus __cdecl SendScore(const IRScoreV1& score) {
 		cpr::Body{ reqBody });
 
 	if (r.error.code != cpr::ErrorCode::OK || r.status_code / 100 == 5) {
-		Logger(std::format("Couldn't POST: {}", r.error.reqBody));
+		Logger(std::format("Couldn't POST: {}", r.error.message));
 		return SendScoreStatus::Retry;
 	}
 
