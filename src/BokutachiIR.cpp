@@ -37,7 +37,7 @@ static bool is_wine()
 
 static void Logger(std::string message)
 {
-	std::println("[BokutachiHook] {}", message);
+	std::println("[BokutachiIR] {}", message);
 	fflush(stdout);
 
 	std::ofstream logFile(path/"Bokutachi.log", std::ios_base::app);
