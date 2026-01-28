@@ -186,7 +186,7 @@ static std::string FormJSONString(const IRScoreV1& score) {
 		scorePacket["scoreData"]["lamp"] = lamps[0];
 	}
 
-	if (score.settings.m_gas && !hashIsCourse) {
+	if (score.settings.m_gas) {
 		scorePacket["scoreData"]["extendedHpGraphs"] = {
 			{"groove", score.graphs.hp[0]},
 			{"hard", score.graphs.hp[1]},
