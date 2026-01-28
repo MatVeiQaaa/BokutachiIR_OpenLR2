@@ -142,7 +142,7 @@ static std::string FormJSONString(const IRScoreV1& score) {
 					{"autoScr", score.settings.assist[0] | score.settings.assist[1]},
 					{"gameMode", GetKeymode(score.state.keymode)},
 					{"random", randomModes[score.settings.random[0]]},
-					{"gauge", gauges[score.settings.gaugeOption]},
+					{"gauge", gauges[score.gaugeType]},
 					{"rseed", score.state.randomseed}
 		}},
 		{"scoreData", {
