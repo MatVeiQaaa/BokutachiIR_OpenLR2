@@ -10,7 +10,8 @@
 
 using json = nlohmann::ordered_json;
 
-// Technically hook version, but let's think of it as of API version :^)
+// Technically hook version, but let's think of it as API version :^)
+// Although as the time of writing this we send more fields than BokutachiHook.
 struct version {
 	int major = 2;
 	int minor = 1;
@@ -140,10 +141,12 @@ static std::string FormJSONString(const IRScoreV1& score) {
 		{"md5", md5},
 		{"playerData", {
 					{"autoScr", score.settings.assist[0] | score.settings.assist[1]},
+					{"dpFlip", nullptr},
 					{"gameMode", GetKeymode(score.state.keymode)},
 					{"random", randomModes[score.settings.random[0]]},
+					{"randomr", nullptr},
 					{"gauge", gauges[score.gaugeType]},
-					{"rseed", score.state.randomseed}
+					{"rseed", score.state.randomseed},
 		}},
 		{"scoreData", {
 					{"pgreat", score.judgements_total.epg + score.judgements_total.lpg},
@@ -175,11 +178,14 @@ static std::string FormJSONString(const IRScoreV1& score) {
 							{"notesPlayed", score.judgements_total.notes_played}
 						}
 					},
-					{"extendedHpGraphs", nullptr}
+					{"extendedHpGraphs", nullptr},
 		}}
 	};
 
-	// TODO: if (DP) {"randomr", randomModes[score.settings.random[1]]},
+	if (score.state.keymode == 10 || score.state.keymode == 14) {
+		scorePacket["playerData"]["dpFlip"] = score.settings.dpflip == 1;
+		scorePacket["playerData"]["randomr"] = randomModes[score.settings.random[1]];
+	}
 
 	if (!hashIsCourse && isCourse && score.clearType > 1)
 	{
