@@ -216,6 +216,11 @@ static SendScoreStatus __cdecl SendScore(const IRScoreV1& score) {
 		return SendScoreStatus::Fail;
 	}
 
+	if (score.state.isNosave) {
+		Logger("Score not sent - NO SAVE score");
+		return SendScoreStatus::Fail;
+	}
+
 	cpr::Response r = cpr::Post(cpr::Url{ hashIsCourse ? urlDan : url },
 		cpr::Timeout{ std::chrono::seconds(30) },
 		cpr::Header{ {"Content-Type", "application/json"} },
