@@ -31,8 +31,11 @@ constexpr const char* randomModes[6] = { "NORAN", "MIRROR", "RAN", "S-RAN", "H-R
 
 static bool is_wine()
 {
-	auto* ntdll = GetModuleHandle("ntdll");
-	return ntdll != nullptr && static_cast<void*>(GetProcAddress(ntdll, "wine_get_version")) != nullptr;
+	static const bool wine = []() {
+		auto* ntdll = GetModuleHandle("ntdll");
+		return ntdll != nullptr && static_cast<void*>(GetProcAddress(ntdll, "wine_get_version")) != nullptr;
+	}();
+	return wine;
 }
 
 static void Logger(std::string message)
