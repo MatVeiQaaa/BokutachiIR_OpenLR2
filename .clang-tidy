@@ -1,0 +1,21 @@
+---
+Checks: |
+  -*,
+  bugprone-*,
+  cert-*,
+  clang-analyzer-*,
+  concurrency-*,
+  google-readability-avoid-underscore-in-googletest-name,
+  google-readability-casting,
+  llvm-namespace-comment,
+  misc-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  -bugprone-easily-swappable-parameters,
+  -misc-use-anonymous-namespace,
+  -modernize-avoid-c-arrays,
+  -modernize-use-trailing-return-type,
+  -performance-enum-size,
+---
+

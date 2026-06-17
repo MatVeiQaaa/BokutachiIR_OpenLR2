@@ -21,7 +21,7 @@ using json = nlohmann::ordered_json;
 
 // Technically hook version, but let's think of it as API version :^)
 // Although as the time of writing this we send more fields than BokutachiHook.
-struct version {
+static constexpr struct version {
 	int major = 2;
 	int minor = 1;
 	int patch = 2;
@@ -50,10 +50,10 @@ static bool is_wine()
 #endif // _WIN32
 }
 
-static void Logger(std::string message)
+static void Logger(std::string_view message)
 {
 	std::println("[BokutachiIR] {}", message);
-	fflush(stdout);
+	(void)fflush(stdout);
 
 	std::ofstream logFile(path/"Bokutachi.log", std::ios_base::app);
 	if (is_wine()) {
@@ -71,7 +71,7 @@ static const char* IR_API GetName() {
 
 // \retval true Good
 static bool CheckTachiApi() {
-	std::string baseUrl = url.substr(0, url.find_first_of("/", 8));
+	std::string baseUrl = url.substr(0, url.find_first_of('/', 8));
 	cpr::Response r = cpr::Get(cpr::Url{ baseUrl + "/api/v1/status" },
 							   cpr::Timeout{ std::chrono::seconds(5) },
 							   cpr::Bearer{ apiKey });
