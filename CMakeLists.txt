@@ -35,3 +35,9 @@ set_target_properties(
     BokutachiIR
     PROPERTIES OUTPUT_NAME "BokutachiIR${CONF_SUFFIX}${ARCH_SUFFIX}"
 )
+
+install(TARGETS BokutachiIR)
+if(MSVC)
+    install(FILES $<TARGET_PDB_FILE:BokutachiIR> DESTINATION bin)
+endif()
+include(CPack)
