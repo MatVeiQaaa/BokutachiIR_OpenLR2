@@ -1,0 +1,78 @@
+name: Build
+
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "Windows x64"
+            os: windows-2022
+            build-preset: windows-vs-x64-release
+            configure-preset: windows-vs-x64
+            package-name: "release-x64"
+          - name: "Windows x86"
+            os: windows-2022
+            build-preset: windows-vs-x86-release
+            configure-preset: windows-vs-x86
+            package-name: "release-x86"
+          - name: "Ubuntu"
+            os: ubuntu-26.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes libcpr-dev nlohmann-json3-dev
+        if: startsWith(matrix.os, 'ubuntu')
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        if: startsWith(matrix.os, 'windows')
+
+      - name: Configure
+        run: cmake -B ./build --preset '${{ matrix.configure-preset }}'
+
+      - name: Build
+        run: cmake --build ./build --preset '${{ matrix.build-preset }}'
+
+      - name: Package
+        run: cpack -G ZIP --config build/CPackConfig.cmake -B build/my_packages -C RelWithDebInfo
+        if: ${{ matrix.package-name != '' }}
+
+      - name: Upload package
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.package-name }}
+          path: build/my_packages/*.zip
+        if: ${{ matrix.package-name != '' }}
+
+  release:
+    if: github.ref_name == 'master'
+    needs: build
+    name: "Release"
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+
+      - name: Show downloaded artifacts
+        run: ls -R artifacts
+
+      - name: Release
+        uses: softprops/action-gh-release@v3
+        with:
+          files: artifacts/**
+          tag_name: latest
