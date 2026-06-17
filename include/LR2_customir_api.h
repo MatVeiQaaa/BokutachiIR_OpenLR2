@@ -99,14 +99,20 @@ struct IRScoreV1 {
 	} graphs{};
 };
 
-enum class SendScoreStatus : int {
+enum class SendScoreStatus: int {
 	Ok = 0,
 	Retry,
 	Fail,
 };
 
+#ifndef _WIN32
+#define __cdecl
+#endif // _WIN32
 struct MethodTable {
 	const char*(__cdecl* GetName)() = nullptr;
 	bool(__cdecl* LoginV1)() = nullptr;
 	SendScoreStatus(__cdecl* SendScoreV1)(const IRScoreV1& score) = nullptr;
 };
+#ifndef _WIN32
+#undef __cdecl
+#endif // _WIN32
