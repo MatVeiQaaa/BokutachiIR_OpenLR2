@@ -11,6 +11,14 @@
 
 using json = nlohmann::ordered_json;
 
+#ifdef _WIN32
+#define IR_API __cdecl
+#define IR_EXPORT __declspec(dllexport)
+#else
+#define IR_API
+#define IR_EXPORT
+#endif // _WIN32
+
 // Technically hook version, but let's think of it as API version :^)
 // Although as the time of writing this we send more fields than BokutachiHook.
 struct version {
@@ -31,11 +39,15 @@ constexpr const char* randomModes[6] = { "NORAN", "MIRROR", "RAN", "S-RAN", "H-R
 
 static bool is_wine()
 {
+#ifdef _WIN32
 	static const bool wine = []() {
 		auto* ntdll = GetModuleHandle("ntdll");
 		return ntdll != nullptr && static_cast<void*>(GetProcAddress(ntdll, "wine_get_version")) != nullptr;
 	}();
 	return wine;
+#else
+	return false;
+#endif // _WIN32
 }
 
 static void Logger(std::string message)
@@ -53,7 +65,7 @@ static void Logger(std::string message)
 	}
 }
 
-static const char* __cdecl GetName() {
+static const char* IR_API GetName() {
 	return "BokutachiIR";
 }
 
@@ -96,7 +108,7 @@ static bool CheckTachiApi() {
 	return true;
 }
 
-static bool __cdecl Login() {
+static bool IR_API Login() {
 	try {
 		json config;
 		{
@@ -209,7 +221,7 @@ static std::string FormJSONString(const IRScoreV1& score) {
 	return scorePacket.dump(4);
 }
 
-static SendScoreStatus __cdecl SendScore(const IRScoreV1& score) {
+static SendScoreStatus IR_API SendScore(const IRScoreV1& score) {
 	const std::string reqBody = FormJSONString(score);
 	const std::string songName = std::format("{} {}", score.song.title, score.song.subtitle);
 	const bool hashIsCourse = score.song.hash.length() > 32;
@@ -239,7 +251,7 @@ static SendScoreStatus __cdecl SendScore(const IRScoreV1& score) {
 	{
 		json log = json::parse(r.text);
 		if (!log["success"]) {
-			Logger(std::format("Score for {} !success: {}", songName, std::string_view(log["description"])));
+			Logger(std::format("Score for {} !success: {}", songName, std::string(log["description"])));
 			Logger(reqBody);
 			return SendScoreStatus::Fail;
 		}
@@ -258,12 +270,13 @@ static SendScoreStatus __cdecl SendScore(const IRScoreV1& score) {
 	return SendScoreStatus::Ok;
 }
 
-extern "C" __declspec(dllexport) void GetMethodTable(MethodTable& table) {
+extern "C" IR_EXPORT void GetMethodTable(MethodTable& table) {
 	table.GetName = &GetName;
 	table.LoginV1 = &Login;
 	table.SendScoreV1 = &SendScore;
 }
 
+#ifdef _WIN32
 BOOL APIENTRY DllMain(
 	HMODULE hModule,
 	DWORD  ul_reason_for_call,
@@ -290,3 +303,4 @@ BOOL APIENTRY DllMain(
 	}
 	return TRUE;
 }
+#endif // _WIN32
